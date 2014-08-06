@@ -27,6 +27,8 @@ function! s:NextNonKeyword(forward, cursor_match)
     let nonkeyword = '\l\u'
     let nonkeyword .= '\|\u\u\k\&\u\u\U\&\u\u[^-_]'
     let nonkeyword .= '\|[-_]'
+    let nonkeyword .= '\|[()<>{}[\]]'
+    let nonkeyword .= '\|["'']'
     let nonkeyword .= '\|.\zs\k\@!'
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
