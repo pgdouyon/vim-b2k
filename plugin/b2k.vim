@@ -1,3 +1,12 @@
+"==============================================================================
+"File:        b2k.vim
+"Description: Camel-case motions and iw text object
+"Maintainer:  Pierre-Guy Douyon <pgdouyon@alum.mit.edu>
+"Version:     1.0.0
+"Last Change: 2014-08-05
+"License:     MIT <../LICENSE>
+"==============================================================================
+
 if exists("g:loaded_b2k")
     finish
 endif
