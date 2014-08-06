@@ -51,7 +51,7 @@ function! s:B2KForwardMotion(forward, mode)
     call s:NextKeyword(a:forward, keyword_cursor_match)
 
     if (a:mode ==? "o") && a:forward
-        call search(".", "b")
+        call search(".", "bW")
     endif
 endfunction
 
@@ -60,7 +60,7 @@ function! s:B2KBacktrackMotion(forward, mode)
     if (a:mode ==? "v")
         normal! gv
     elseif (a:mode ==? "o")
-        execute (!a:forward ? 'call search(".", "b")|' : '')."normal! v"
+        execute (!a:forward ? 'call search(".", "bW")|' : '')."normal! v"
     endif
 
     let backtrack = !a:forward
