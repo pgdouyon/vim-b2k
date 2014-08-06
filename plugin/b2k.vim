@@ -108,12 +108,14 @@ onoremap <silent> <Plug>B2K_e :<C-u>call <SID>B2KBacktrackMotion(1, "o")<CR>
 onoremap <silent> <Plug>B2K_ge :<C-u>call <SID>B2KForwardMotion(0, "o")<CR>
 onoremap <silent> <Plug>B2K_iw :<C-u>call <SID>B2KInnerWord("v")<CR>
 
-map w <Plug>B2K_w
-map b <Plug>B2K_b
-map e <Plug>B2K_e
-map ge <Plug>B2K_ge
-xmap iw <Plug>B2K_iw
-omap iw <Plug>B2K_iw
+if !exists("g:b2k_no_mappings") || (g:b2k_no_mappings == 0)
+    map w <Plug>B2K_w
+    map b <Plug>B2K_b
+    map e <Plug>B2K_e
+    map ge <Plug>B2K_ge
+    xmap iw <Plug>B2K_iw
+    omap iw <Plug>B2K_iw
+endif
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
