@@ -70,6 +70,18 @@ function! s:B2KBacktrackMotion(forward, mode)
     call s:NextKeyword(backtrack, cursor_match)
 endfunction
 
+
+function! s:B2KInnerWord(mode)
+    let char_under_cursor = getline(".")[col(".") - 1]
+    if !s:isKeyword(char_under_cursor)
+        return
+    endif
+    call search(".", "W")
+    execute "normal \<Plug>B2K_b"
+    execute "normal! \<Esc>v"
+    execute "normal \<Plug>B2K_e"
+endfunction
+
 nnoremap <silent> <Plug>B2K_w :<C-u>call <SID>B2KForwardMotion(1, "n")<CR>
 nnoremap <silent> <Plug>B2K_b :<C-u>call <SID>B2KBacktrackMotion(0, "n")<CR>
 nnoremap <silent> <Plug>B2K_e :<C-u>call <SID>B2KBacktrackMotion(1, "n")<CR>
@@ -79,16 +91,20 @@ xnoremap <silent> <Plug>B2K_w :<C-u>call <SID>B2KForwardMotion(1, "v")<CR>
 xnoremap <silent> <Plug>B2K_b :<C-u>call <SID>B2KBacktrackMotion(0, "v")<CR>
 xnoremap <silent> <Plug>B2K_e :<C-u>call <SID>B2KBacktrackMotion(1, "v")<CR>
 xnoremap <silent> <Plug>B2K_ge :<C-u>call <SID>B2KForwardMotion(0, "v")<CR>
+xnoremap <silent> <Plug>B2K_iw :<C-u>call <SID>B2KInnerWord("v")<CR>
 
 onoremap <silent> <Plug>B2K_w :<C-u>call <SID>B2KForwardMotion(1, "o")<CR>
 onoremap <silent> <Plug>B2K_b :<C-u>call <SID>B2KBacktrackMotion(0, "o")<CR>
 onoremap <silent> <Plug>B2K_e :<C-u>call <SID>B2KBacktrackMotion(1, "o")<CR>
 onoremap <silent> <Plug>B2K_ge :<C-u>call <SID>B2KForwardMotion(0, "o")<CR>
+onoremap <silent> <Plug>B2K_iw :<C-u>call <SID>B2KInnerWord("v")<CR>
 
 map w <Plug>B2K_w
 map b <Plug>B2K_b
 map e <Plug>B2K_e
 map ge <Plug>B2K_ge
+xmap iw <Plug>B2K_iw
+omap iw <Plug>B2K_iw
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo
