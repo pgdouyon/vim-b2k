@@ -15,10 +15,13 @@ let g:loaded_b2k = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-function! s:isKeyword(word)
-    let keyword = '\w\&[^_]'
-    let keyword .= '\|\s\zs\%(\W\W\|__\)'
-    let is_keyword = (a:word =~ keyword)
+let s:keyword = '\w\&[^-_]'
+let s:keyword .= '\|\s\+\zs\%(\S\S\&\%(\W\W\|__\)\)'
+
+function! s:isKeyword(line)
+    let keyword = '\%#'.s:keyword
+    let keyword = substitute(keyword, '\V\\zs', '\\%#', '')
+    let is_keyword = (a:line =~ s:keyword)
     return is_keyword
 endfunction
 
@@ -28,6 +31,8 @@ function! s:NextNonKeyword(forward, cursor_match)
     let nonkeyword .= '\|\u\u\w\&\u\u\U\&\u\u[^-_]'
     let nonkeyword .= '\|[-_]'
     let nonkeyword .= '\|\W'
+    let nonkeyword .= '\|$'
+    let nonkeyword .= '\|\%('.s:keyword.'\)\@!'
     " let nonkeyword .= '\|[()<>{}[\]]'
     " let nonkeyword .= '\|["'']'
     " let nonkeyword .= '\|.\zs\k\@!'
@@ -40,12 +45,10 @@ endfunction
 
 function! s:NextKeyword(forward, cursor_match)
     " use \S in addition to \k to more closely mimic Vim's default behavior
-    let keyword = '\w\&[^-_]'
-    let keyword .= '\|\s\zs\%(\W\W\|__\)'
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
     let flags .= a:cursor_match ? 'c' : ''
-    call search(keyword, flags)
+    call search(s:keyword, flags)
 endfunction
 
 
@@ -56,8 +59,7 @@ function! s:B2KForwardMotion(forward, mode)
         normal! v
     endif
 
-    let char_under_cursor = getline(".")[col(".") - 1]
-    let nonkeyword_cursor_match = !s:isKeyword(char_under_cursor)
+    let nonkeyword_cursor_match = !s:isKeyword(getline("."))
     let keyword_cursor_match = !a:forward
     call s:NextNonKeyword(a:forward, nonkeyword_cursor_match)
     call s:NextKeyword(a:forward, keyword_cursor_match)
@@ -84,8 +86,7 @@ endfunction
 
 
 function! s:B2KInnerWord(mode)
-    let char_under_cursor = getline(".")[col(".") - 1]
-    if !s:isKeyword(char_under_cursor)
+    if !s:isKeyword(getline("."))
         return
     endif
     call search(".", "W")
