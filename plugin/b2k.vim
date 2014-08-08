@@ -16,8 +16,8 @@ let s:save_cpo = &cpoptions
 set cpoptions&vim
 
 function! s:isKeyword(word)
-    let keyword = '\k\&[^-_]'
-    let keyword .= '\|\s\zs\S'
+    let keyword = '\w\&[^_]'
+    let keyword .= '\|\s\zs\%(\W\W\|__\)'
     let is_keyword = (a:word =~ keyword)
     return is_keyword
 endfunction
@@ -25,11 +25,12 @@ endfunction
 
 function! s:NextNonKeyword(forward, cursor_match)
     let nonkeyword = '\l\u'
-    let nonkeyword .= '\|\u\u\k\&\u\u\U\&\u\u[^-_]'
+    let nonkeyword .= '\|\u\u\w\&\u\u\U\&\u\u[^-_]'
     let nonkeyword .= '\|[-_]'
-    let nonkeyword .= '\|[()<>{}[\]]'
-    let nonkeyword .= '\|["'']'
-    let nonkeyword .= '\|.\zs\k\@!'
+    let nonkeyword .= '\|\W'
+    " let nonkeyword .= '\|[()<>{}[\]]'
+    " let nonkeyword .= '\|["'']'
+    " let nonkeyword .= '\|.\zs\k\@!'
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
     let flags .= a:cursor_match ? 'c' : ''
@@ -39,8 +40,8 @@ endfunction
 
 function! s:NextKeyword(forward, cursor_match)
     " use \S in addition to \k to more closely mimic Vim's default behavior
-    let keyword = '\k\&[^-_]'
-    let keyword .= '\|\s\zs\S'
+    let keyword = '\w\&[^-_]'
+    let keyword .= '\|\s\zs\%(\W\W\|__\)'
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
     let flags .= a:cursor_match ? 'c' : ''
