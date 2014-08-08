@@ -33,9 +33,6 @@ function! s:NextNonKeyword(forward, cursor_match)
     let nonkeyword .= '\|\W'
     let nonkeyword .= '\|$'
     let nonkeyword .= '\|\%('.s:keyword.'\)\@!'
-    " let nonkeyword .= '\|[()<>{}[\]]'
-    " let nonkeyword .= '\|["'']'
-    " let nonkeyword .= '\|.\zs\k\@!'
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
     let flags .= a:cursor_match ? 'c' : ''
@@ -44,7 +41,6 @@ endfunction
 
 
 function! s:NextKeyword(forward, cursor_match)
-    " use \S in addition to \k to more closely mimic Vim's default behavior
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
     let flags .= a:cursor_match ? 'c' : ''
