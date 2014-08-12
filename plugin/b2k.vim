@@ -25,7 +25,7 @@ function! s:isUnitWidthSep(char)
 endfunction
 
 
-function! s:NextNonKeyword(forward, cursor_match)
+function! s:NextNonWordChar(forward, cursor_match)
     let word_char = '\%(\w\&[^-_]\)'
     let non_uppercase = '\%(\l\|\d\)'
     let symbol = '\%(\W\&\S\&[^-_]\)'
@@ -48,7 +48,7 @@ function! s:NextNonKeyword(forward, cursor_match)
 endfunction
 
 
-function! s:NextKeyword(forward, cursor_match)
+function! s:NextWordChar(forward, cursor_match)
     let word_char = '\%(\w\&[^-_]\)'
     let non_uppercase = '\%(\l\|\d\)'
     let symbol = '\%(\W\&\S\&[^-_]\)'
@@ -80,8 +80,8 @@ function! s:B2KForwardMotion(forward, mode)
     let char_under_cursor = getline(".")[col(".") - 1]
     let nonword_cursor_match = (s:isUnitWidthSep(char_under_cursor) || !a:forward)
     let word_cursor_match = a:forward
-    call s:NextNonKeyword(a:forward, nonword_cursor_match)
-    call s:NextKeyword(a:forward, word_cursor_match)
+    call s:NextNonWordChar(a:forward, nonword_cursor_match)
+    call s:NextWordChar(a:forward, word_cursor_match)
 
     if (a:mode ==? "o") && a:forward
         call search(".", "bW")
@@ -98,9 +98,9 @@ function! s:B2KBacktrackMotion(forward, mode)
 
     let backtrack = !a:forward
     let cursor_match = !a:forward
-    call s:NextKeyword(a:forward, 0)
-    call s:NextNonKeyword(a:forward, cursor_match)
-    call s:NextKeyword(backtrack, cursor_match)
+    call s:NextWordChar(a:forward, 0)
+    call s:NextNonWordChar(a:forward, cursor_match)
+    call s:NextWordChar(backtrack, cursor_match)
 endfunction
 
 
