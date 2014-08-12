@@ -15,24 +15,32 @@ let g:loaded_b2k = 1
 let s:save_cpo = &cpoptions
 set cpoptions&vim
 
-let s:keyword = '\w\&[^-_]'
-let s:keyword .= '\|\s\+\zs\%(\S\S\&\%(\W\W\|__\)\)'
-
-function! s:isKeyword(line)
-    let keyword = '\%#'.s:keyword
-    let keyword = substitute(keyword, '\V\\zs', '\\%#', '')
-    let is_keyword = (a:line =~ s:keyword)
-    return is_keyword
+function! s:isUnitWidthSep(char)
+    let word_char = '\%(\w\&[^-_]\)'
+    let symbol = '\%(\W\&\S\&[^-_]\)'
+    let unit_width_sep = '\s\|[-_]'
+    let unit_width_sep .= '\|' . word_char . '\zs' . symbol . '\ze' . word_char
+    let is_unit_width_sep = (a:char =~ unit_width_sep)
+    return is_unit_width_sep
 endfunction
 
 
 function! s:NextNonKeyword(forward, cursor_match)
-    let nonkeyword = '\l\u'
-    let nonkeyword .= '\|\u\u\w\&\u\u\U\&\u\u[^-_]'
-    let nonkeyword .= '\|[-_]'
-    let nonkeyword .= '\|\W'
-    let nonkeyword .= '\|$'
-    let nonkeyword .= '\|\%('.s:keyword.'\)\@!'
+    let word_char = '\%(\w\&[^-_]\)'
+    let non_uppercase = '\%(\l\|\d\)'
+    let symbol = '\%(\W\&\S\&[^-_]\)'
+
+    let zero_width_sep = non_uppercase . '\zs\u\ze' . non_uppercase
+    let zero_width_sep .= '\|\u\zs\u\ze' . non_uppercase
+    let zero_width_sep .= '\|' . symbol . '\@<!\zs' . symbol . '\ze' . symbol
+    let zero_width_sep .= '\|' . symbol . symbol . '\zs' . symbol . '\@!'
+    let zero_width_sep .= '\|^'
+
+    let unit_width_sep = '\s'
+    let unit_width_sep .= '\|[-_]'
+    let unit_width_sep .= '\|' . word_char . '\zs' . symbol . '\ze' . word_char
+
+    let nonkeyword = zero_width_sep . '\|' . unit_width_sep
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
     let flags .= a:cursor_match ? 'c' : ''
@@ -41,10 +49,24 @@ endfunction
 
 
 function! s:NextKeyword(forward, cursor_match)
+    let word_char = '\%(\w\&[^-_]\)'
+    let non_uppercase = '\%(\l\|\d\)'
+    let symbol = '\%(\W\&\S\&[^-_]\)'
+    let whitespace = '\%(\s\|[-_]\)'
+
+    let zero_width_sep = non_uppercase . '\zs\u\ze' . non_uppercase
+    let zero_width_sep .= '\|\u\zs\u\ze' . non_uppercase
+    let zero_width_sep .= '\|' . word_char . '\zs' . symbol . '\ze' . symbol
+    let zero_width_sep .= '\|' . symbol . symbol . '\zs' . word_char
+    let zero_width_sep .= '\|\s\zs' . symbol . '\ze' . symbol
+    let zero_width_sep .= '\|' . symbol . '\zs' . symbol . '\ze\s'
+
+    let keyword = '\w\&[^-_]' . '\|' . zero_width_sep
+    let keyword .= '\|' . whitespace . '\zs' . symbol . '\ze' . whitespace
     let flags = 'W'
     let flags .= a:forward ? '' : 'b'
     let flags .= a:cursor_match ? 'c' : ''
-    call search(s:keyword, flags)
+    call search(keyword, flags)
 endfunction
 
 
@@ -55,10 +77,11 @@ function! s:B2KForwardMotion(forward, mode)
         normal! v
     endif
 
-    let nonkeyword_cursor_match = !s:isKeyword(getline("."))
-    let keyword_cursor_match = !a:forward
-    call s:NextNonKeyword(a:forward, nonkeyword_cursor_match)
-    call s:NextKeyword(a:forward, keyword_cursor_match)
+    let char_under_cursor = getline(".")[col(".") - 1]
+    let nonword_cursor_match = (s:isUnitWidthSep(char_under_cursor) || !a:forward)
+    let word_cursor_match = a:forward
+    call s:NextNonKeyword(a:forward, nonword_cursor_match)
+    call s:NextKeyword(a:forward, word_cursor_match)
 
     if (a:mode ==? "o") && a:forward
         call search(".", "bW")
@@ -74,7 +97,7 @@ function! s:B2KBacktrackMotion(forward, mode)
     endif
 
     let backtrack = !a:forward
-    let cursor_match = a:forward
+    let cursor_match = !a:forward
     call s:NextKeyword(a:forward, 0)
     call s:NextNonKeyword(a:forward, cursor_match)
     call s:NextKeyword(backtrack, cursor_match)
@@ -82,7 +105,8 @@ endfunction
 
 
 function! s:B2KInnerWord(mode)
-    if !s:isKeyword(getline("."))
+    let char_under_cursor = getline(".")[col(".") - 1]
+    if s:isUnitWidthSep(char_under_cursor)
         return
     endif
     call search(".", "W")
